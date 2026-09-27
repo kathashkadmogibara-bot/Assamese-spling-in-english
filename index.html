@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>MOGIBARA Assamese Romanizer</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    font-family:Arial, sans-serif;
+    background:#0d1117;
+    color:white;
+    min-height:100vh;
+}
+
+header{
+    background:#161b22;
+    border-bottom:1px solid #30363d;
+    padding:18px 20px;
+    text-align:center;
+}
+
+.logo{
+    font-size:26px;
+    font-weight:bold;
+    letter-spacing:2px;
+}
+
+.logo span{
+    color:#58a6ff;
+}
+
+.subtitle{
+    margin-top:5px;
+    color:#8b949e;
+    font-size:13px;
+}
+
+.container{
+    width:92%;
+    max-width:850px;
+    margin:30px auto;
+}
+
+.card{
+    background:#161b22;
+    border:1px solid #30363d;
+    border-radius:15px;
+    padding:20px;
+    margin-bottom:20px;
+}
+
+label{
+    display:block;
+    font-size:15px;
+    font-weight:bold;
+    margin-bottom:10px;
+}
+
+textarea{
+    width:100%;
+    min-height:180px;
+    resize:vertical;
+    border:1px solid #30363d;
+    border-radius:10px;
+    background:#0d1117;
+    color:white;
+    padding:15px;
+    font-size:20px;
+    outline:none;
+    line-height:1.7;
+}
+
+textarea:focus{
+    border-color:#58a6ff;
+}
+
+.output{
+    min-height:180px;
+    background:#0d1117;
+    border:1px solid #30363d;
+    border-radius:10px;
+    padding:15px;
+    font-size:20px;
+    line-height:1.7;
+    white-space:pre-wrap;
+    word-break:break-word;
+}
+
+.buttons{
+    display:flex;
+    gap:10px;
+    margin-top:15px;
+    flex-wrap:wrap;
+}
+
+button{
+    border:none;
+    border-radius:8px;
+    padding:12px 18px;
+    font-size:15px;
+    font-weight:bold;
+    cursor:pointer;
+    background:#238636;
+    color:white;
+}
+
+button:hover{
+    background:#2ea043;
+}
+
+.clear{
+    background:#30363d;
+}
+
+.clear:hover{
+    background:#484f58;
+}
+
+footer{
+    text-align:center;
+    color:#8b949e;
+    padding:20px;
+    font-size:13px;
+}
+
+.mogibara{
+    color:#58a6ff;
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">MOGIBARA<span>®</span></div>
+    <div class="subtitle">
+        Assamese → Roman English
+    </div>
+</header>
+
+<div class="container">
+
+    <div class="card">
+
+        <label>Assamese Text</label>
+
+        <textarea
+            id="inputText"
+            placeholder="অসমীয়া লিখক..."
+        ></textarea>
+
+        <div class="buttons">
+            <button onclick="convertText()">Convert</button>
+            <button class="clear" onclick="clearText()">Clear</button>
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <label>Roman English</label>
+
+        <div
+            id="outputText"
+            class="output"
+        >Your converted text will appear here...</div>
+
+        <div class="buttons">
+            <button onclick="copyText()">Copy</button>
+        </div>
+
+    </div>
+
+</div>
+
+<footer>
+    © 2026 <span class="mogibara">MOGIBARA</span> — Assamese Romanizer
+</footer>
+
+
+<script>
+
+/*
+========================================
+MOGIBARA ASSAMESE ROMANIZER
+========================================
+*/
+
+
+const consonants = {
+
+    "ক":"k",
+    "খ":"kh",
+    "গ":"g",
+    "ঘ":"gh",
+    "ঙ":"ng",
+
+    "চ":"s",
+    "ছ":"s",
+    "জ":"z",
+    "ঝ":"jh",
+    "ঞ":"n",
+
+    "ট":"t",
+    "ঠ":"th",
+    "ড":"d",
+    "ঢ":"dh",
+    "ণ":"n",
+
+    "ত":"t",
+    "থ":"th",
+    "দ":"d",
+    "ধ":"dh",
+    "ন":"n",
+
+    "প":"p",
+    "ফ":"ph",
+    "ব":"b",
+    "ভ":"bh",
+    "ম":"m",
+
+    "য":"y",
+    "ৰ":"r",
+    "ল":"l",
+    "ৱ":"w",
+
+    "শ":"x",
+    "ষ":"x",
+    "স":"s",
+    "হ":"h",
+
+    "ড়":"r",
+    "ঢ়":"rh",
+    "য়":"y",
+
+    "ক্ক":"kk",
+    "ক্ত":"kt",
+    "ঙ্গ":"ngg",
+    "চ্ছ":"chh",
+    "জ্জ":"jj",
+    "ট্ট":"tt",
+    "ড্ড":"dd",
+    "ত্ত":"tt",
+    "দ্ধ":"ddh",
+    "ন্ন":"nn",
+    "ম্প":"mp",
+    "ম্ব":"mb",
+    "ল্প":"lp",
+    "ল্ল":"ll",
+    "স্ত":"st",
+    "স্থ":"sth",
+    "স্ক":"sk",
+    "স্প":"sp",
+    "স্ম":"sm"
+};
+
+
+const vowels = {
+
+    "অ":"o",
+    "আ":"a",
+    "ই":"i",
+    "ঈ":"i",
+    "উ":"u",
+    "ঊ":"u",
+    "ঋ":"ri",
+
+    "এ":"e",
+    "ঐ":"oi",
+    "ও":"o",
+    "ঔ":"ou"
+};
+
+
+const vowelSigns = {
+
+    "া":"a",
+    "ি":"i",
+    "ী":"i",
+    "ু":"u",
+    "ূ":"u",
+    "ৃ":"ri",
+    "ে":"e",
+    "ৈ":"oi",
+    "ো":"o",
+    "ৌ":"ou"
+};
+
+
+const digits = {
+
+    "০":"0",
+    "১":"1",
+    "২":"2",
+    "৩":"3",
+    "৪":"4",
+    "৫":"5",
+    "৬":"6",
+    "৭":"7",
+    "৮":"8",
+    "৯":"9"
+};
+
+
+const special = {
+
+    "ঁ":"n",
+    "ং":"ng",
+    "ঃ":"h",
+    "্":"",
+    "়":""
+};
+
+
+/*
+========================================
+WORD BASED COMMON ASSAMESE
+========================================
+
+These rules help make natural Roman spelling.
+*/
+
+const commonWords = {
+
+    "আমি":"Ame",
+    "মই":"Moi",
+    "তুমি":"Tumi",
+    "আপুনি":"Apuni",
+    "সি":"Xi",
+    "সেই":"Xei",
+
+    "কালি":"kali",
+    "আজি":"Aji",
+    "কাল":"kal",
+    "যাম":"jam",
+    "যাব":"jabo",
+    "যোৱা":"juwa",
+
+    "মোৰ":"mur",
+    "তোৰ":"tur",
+    "তোমাৰ":"tomar",
+    "আপোনাৰ":"aponar",
+
+    "কি":"ki",
+    "কিয়":"kiyo",
+    "কেনেকৈ":"kenekoi",
+
+    "ভাল":"bhal",
+    "বেয়া":"beya",
+
+    "ঘৰ":"ghor",
+    "স্কুল":"school",
+    "কলেজ":"college",
+
+    "হয়":"hoi",
+    "হয়":"hoi",
+    "নহয়":"nohoy",
+    "নহয়":"nohoy",
+
+    "কৰোঁ":"koru",
+    "কৰো":"koro",
+    "কৰা":"kora",
+    "কৰিব":"koribo",
+
+    "খাম":"kham",
+    "খাব":"khabo",
+
+    "আহিম":"ahim",
+    "আহিব":"ahibo",
+
+    "ধন্যবাদ":"dhonyobad"
+};
+
+
+/*
+========================================
+CONVERT WORD
+========================================
+*/
+
+function convertWord(word){
+
+    if(commonWords[word]){
+        return commonWords[word];
+    }
+
+    let result = "";
+
+    const chars = [...word];
+
+    for(let i = 0; i < chars.length; i++){
+
+        let char = chars[i];
+
+        /*
+        Handle consonant + halant combinations
+        */
+
+        if(
+            i + 1 < chars.length &&
+            consonants[char + chars[i+1]]
+        ){
+
+            result += consonants[char + chars[i+1]];
+            i++;
+
+            continue;
+        }
+
+
+        /*
+        Consonants
+        */
+
+        if(consonants[char]){
+
+            result += consonants[char];
+
+            /*
+            If next character is not a vowel sign
+            or halant, Assamese usually has an inherent
+            vowel.
+            */
+
+            if(
+                i + 1 >= chars.length ||
+                (
+                    !vowelSigns[chars[i+1]] &&
+                    chars[i+1] !== "্" &&
+                    chars[i+1] !== "়"
+                )
+            ){
+
+                result += "o";
+            }
+
+            continue;
+        }
+
+
+        /*
+        Independent vowels
+        */
+
+        if(vowels[char]){
+
+            result += vowels[char];
+            continue;
+        }
+
+
+        /*
+        Vowel signs
+        */
+
+        if(vowelSigns[char]){
+
+            result += vowelSigns[char];
+            continue;
+        }
+
+
+        /*
+        Special signs
+        */
+
+        if(special[char] !== undefined){
+
+            result += special[char];
+            continue;
+        }
+
+
+        /*
+        Assamese digits
+        */
+
+        if(digits[char]){
+
+            result += digits[char];
+            continue;
+        }
+
+
+        /*
+        English letters / punctuation / spaces
+        */
+
+        result += char;
+    }
+
+    return result;
+}
+
+
+/*
+========================================
+FULL TEXT CONVERSION
+========================================
+*/
+
+function convertText(){
+
+    const input =
+        document.getElementById("inputText").value;
+
+    if(!input.trim()){
+
+        document.getElementById("outputText").innerText =
+            "Your converted text will appear here...";
+
+        return;
+    }
+
+
+    /*
+    Keep spaces and line breaks
+    */
+
+    const words = input.split(/(\s+)/);
+
+    let output = "";
+
+    for(const part of words){
+
+        if(/^\s+$/.test(part)){
+
+            output += part;
+
+        }else{
+
+            output += convertWord(part);
+        }
+    }
+
+
+    document.getElementById("outputText").innerText =
+        output;
+}
+
+
+/*
+========================================
+LIVE CONVERSION
+========================================
+*/
+
+document
+    .getElementById("inputText")
+    .addEventListener("input", convertText);
+
+
+/*
+========================================
+CLEAR
+========================================
+*/
+
+function clearText(){
+
+    document.getElementById("inputText").value = "";
+
+    document.getElementById("outputText").innerText =
+        "Your converted text will appear here...";
+}
+
+
+/*
+========================================
+COPY
+========================================
+*/
+
+function copyText(){
+
+    const output =
+        document.getElementById("outputText").innerText;
+
+    if(
+        !output ||
+        output === "Your converted text will appear here..."
+    ){
+        return;
+    }
+
+    navigator.clipboard.writeText(output);
+
+    alert("Copied!");
+}
+
+</script>
+
+</body>
+</html>
